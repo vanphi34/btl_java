@@ -5,7 +5,7 @@ import java.util.*;
 public class Main {
 
 
-    
+
 
     // bài kiểm tra TIS của target đang xét với sensor a đang có hướng là phần thứ n
 
@@ -43,21 +43,22 @@ public class Main {
     }
 
     // xay dung ma tran so luong target dc bao phu cua moi sensor voi moi huong
-    public static ArrayList getF(sensor ss, ArrayList<target> ds_target){
+    public static ArrayList getF(ArrayList<sensor> ss, ArrayList<target> ds_target){
+        ArrayList<ArrayList<Integer>> a = new ArrayList();
         ArrayList<Integer> xx = new ArrayList<Integer>();
-        for (int j=0;j<ss.getN();j++){
-            int dem =0;
-            for(int k=0;k<ds_target.size();k++){
-                if(tis(ss,j,ds_target.get(k))){
-                    dem++;
+        for (int i=0;i<ss.size();i++){
+            for (int j=0;j<ss.get(i).getN();j++){
+                int dem =0;
+                for(int k=0;k<ds_target.size();k++){
+                    if(tis(ss.get(i),j,ds_target.get(k))){
+                        dem++;
+                    }
                 }
+                xx.add(dem);
             }
-            xx.add(dem);
+            a.add(xx);
         }
-
-
-        return xx;
-
+        return a;
     }
 
 
@@ -70,94 +71,116 @@ public class Main {
         // các sensor không hoạt
         ArrayList<sensor> y = ds_sensor;
 
-        for(int i=0;i<ds_sensor.size();i++){
-            ArrayList<Integer> f = getF(ds_sensor.get(i),v);
-            int max = -1;
-            int huong =0;
-            for(int j=0;i<ds_sensor.get(i).getN();j++){
-                if(f.get(j)>max){
-                    max = f.get(i);
-                    huong =i;
+
+        ////// xu ly lai doan nay
+
+        while (true){
+
+
+            if(v.isEmpty() || y.isEmpty()){
+                break;
+            }
+            ArrayList<ArrayList<Integer>> a = getF(y,v);
+            int max = 0;
+            sensor index_sensor = new sensor();
+            int index_huong =0;
+            for(int i=0;i<y.size();i++){
+                for(int j=0;j<y.get(i).getN();j++){
+                    if(timphiij(y.get(i),j,v).size()>max){
+                        max = timphiij(y.get(i),j,v).size();
+                        index_sensor = y.get(i);
+                        index_huong = j;
+                    }
                 }
             }
-            // them ij vao z
-            Map<sensor,Integer> ij = new Map<sensor, Integer>() {
-                @Override
-                public int size() {
-                    return 0;
+            if(max==0){
+                break;
+            }
+            else {
+                // them ij vao z
+                Map<sensor,Integer> ij = new Map<sensor, Integer>() {
+                    @Override
+                    public int size() {
+                        return 0;
+                    }
+
+                    @Override
+                    public boolean isEmpty() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean containsKey(Object key) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean containsValue(Object value) {
+                        return false;
+                    }
+
+                    @Override
+                    public Integer get(Object key) {
+                        return null;
+                    }
+
+                    @Override
+                    public Integer put(sensor key, Integer value) {
+                        return null;
+                    }
+
+                    @Override
+                    public Integer remove(Object key) {
+                        return null;
+                    }
+
+                    @Override
+                    public void putAll(Map<? extends sensor, ? extends Integer> m) {
+
+                    }
+
+                    @Override
+                    public void clear() {
+
+                    }
+
+                    @Override
+                    public Set<sensor> keySet() {
+                        return null;
+                    }
+
+                    @Override
+                    public Collection<Integer> values() {
+                        return null;
+                    }
+
+                    @Override
+                    public Set<Entry<sensor, Integer>> entrySet() {
+                        return null;
+                    }
+                };
+                ij.put(index_sensor,index_huong);
+                z.add(ij);
+
+                // xoa phi ij ra khoi v
+                for(int j=0;j<max;j++){
+                    ArrayList <target> daphathien = new ArrayList<target>();
+                    daphathien = timphiij(index_sensor,index_huong,v);
+                    for(int k=0;k<daphathien.size();k++){
+                        v.remove(daphathien.get(k));
+                    }
                 }
-
-                @Override
-                public boolean isEmpty() {
-                    return false;
-                }
-
-                @Override
-                public boolean containsKey(Object key) {
-                    return false;
-                }
-
-                @Override
-                public boolean containsValue(Object value) {
-                    return false;
-                }
-
-                @Override
-                public Integer get(Object key) {
-                    return null;
-                }
-
-                @Override
-                public Integer put(sensor key, Integer value) {
-                    return null;
-                }
-
-                @Override
-                public Integer remove(Object key) {
-                    return null;
-                }
-
-                @Override
-                public void putAll(Map<? extends sensor, ? extends Integer> m) {
-
-                }
-
-                @Override
-                public void clear() {
-
-                }
-
-                @Override
-                public Set<sensor> keySet() {
-                    return null;
-                }
-
-                @Override
-                public Collection<Integer> values() {
-                    return null;
-                }
-
-                @Override
-                public Set<Entry<sensor, Integer>> entrySet() {
-                    return null;
-                }
-            };
-            ij.put(ds_sensor.get(i),max);
-            z.add(ij);
-
-            // xoa phi ij ra khoi v
-            for(int j=0;j<max;j++){
-                ArrayList <target> daphathien = new ArrayList<target>();
-                daphathien = timphiij(ds_sensor.get(i),max,v);
-                for(int k=0;k<daphathien.size();k++){
-                    v.remove(daphathien.get(k));
-                }
+                // xoa cam bien i ra khoi y
+                y.remove(index_sensor);
             }
 
-            // xoa cam bien i ra khoi y
-            y.remove(ds_sensor.get(i));
         }
 
+    }
+
+    // thuật toán tham lam phân tán dga
+
+    public static void dga(){
 
     }
 
@@ -187,7 +210,7 @@ public class Main {
 //    }
 
     public static void main(String[] args) {
-	// write your code here
+        // write your code here
 
 
         // tạo danh sách 10 mục tiêu ngẫu nhiên
@@ -228,4 +251,6 @@ public class Main {
 //        }
 
     }
+
+
 }
